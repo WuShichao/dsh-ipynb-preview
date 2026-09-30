@@ -1,0 +1,63 @@
+{
+  "name": "dsh-ipynb-preview",
+  "version": "0.1.0",
+  "description": "Render Jupyter .ipynb notebooks in the DSH document preview, with syntax highlighting, LaTeX math, and zoomable figures, instead of showing raw JSON",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "katex"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "lib/client.template.js",
+    "cordis.patch.yml"
+  ],
+  "scripts": {
+    "build": "node tools/build-client.mjs",
+    "fixture": "node tests/make-fixture.mjs",
+    "lint": "node tests/lint-bundle.mjs",
+    "mount": "node tests/mount.mjs",
+    "test-page": "node tests/make-page.mjs test-page.html",
+    "prepare": "node tools/build-client.mjs",
+    "verify": "node tests/verify.mjs",
+    "test": "npm run build && npm run verify && npm run lint && npm run mount"
+  },
+  "devDependencies": {
+    "katex": "0.18.9",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ],
+      "platform": "web"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the client artifact
+        run: npm run build
+
+      # The artifact is generated. If a build on a clean checkout differs from
+      # the committed file, the template and the bundle have drifted apart, and
+      # the committed copy is what the shell would serve.
+      - name: Check that the committed artifact matches the template
+        run: |
+          if ! git diff --quiet -- lib/client.js; then
+            echo "::error::lib/client.js is out of date; run 'npm run build' and commit the result"
+            git --no-pager diff --stat -- lib/client.js
+            exit 1
+          fi
+          echo "the committed artifact matches the template"
+
+      - name: Verify
+        run: npm test

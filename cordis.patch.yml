@@ -1,0 +1,12 @@
+# Bundle patch layer for dsh-ipynb-preview.
+#
+# `insert` ADDS a loader row. A bare `- id: ... / name: ...` is a patch target
+# for an EXISTING row, which the loader warns about and skips ("entry not
+# found") — that silently produced a loaded bundle with no client row at all.
+#
+# The inserted entry's `name` is both the module specifier the loader imports
+# and the id the web client module table registers, so it must equal the
+# package name.
+- insert:
+    - id: ipynb-preview
+      name: dsh-ipynb-preview

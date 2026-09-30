@@ -1,0 +1,126 @@
+# dsh-ipynb-preview
+
+A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) plugin that
+renders Jupyter notebooks in the document preview pane: syntax-highlighted code,
+real LaTeX, and zoomable figures — instead of raw JSON.
+
+Without it, opening a `.ipynb` in DSH shows its JSON source. With it, the file
+opens as a notebook.
+
+| Feature | Notes |
+|---|---|
+| Syntax highlighting | Python, JavaScript/TypeScript, JSON, Bash, and INI, with per-language grammars |
+| LaTeX math | Vendored KaTeX, so it works offline; inline `$…$` and display `$$…$$`, including inside tables and lists |
+| Markdown subset | Headings, lists, tables, blockquotes, fenced code, links, bold/italic, code spans |
+| Figure zoom | Click any output figure to open it, then scroll or `+`/`−` to zoom continuously, drag to pan, `0` to fit |
+| Save figures | Names each figure after the notebook, e.g. `sample-notebook-cell3-out1.png` |
+| Outputs | Streams, `display_data`, `execute_result`, and error tracebacks with ANSI escapes stripped |
+
+Everything is self-contained: the KaTeX engine and its web fonts are inlined into
+the client bundle, so no request leaves your machine.
+
+## Install
+
+```sh
+dsh plugin --profile <your-profile> add dsh-ipynb-preview
+```
+
+Then restart DSH. The plugin is a client-side renderer, so it needs a restart
+rather than a page refresh: the shell computes its client bundle revision at
+startup.
+
+To install from a checkout instead:
+
+```sh
+dsh plugin --profile <your-profile> add ./dsh-ipynb-preview
+```
+
+## How it works
+
+DSH discovers the package through the profile's bundle list, reads `dsh.client`
+from this manifest, and serves `lib/client.js` to the browser as part of the
+client roster. That bundle registers a document-preview renderer for the `ipynb`
+extension:
+
+```
+lib/index.js          host half; deliberately empty, the plugin is browser-only
+lib/client.template.js the editable client source, with two KaTeX placeholders
+lib/client.js          the generated artifact the shell serves
+cordis.patch.yml       the bundle layer that inserts the plugin row
+tools/build-client.mjs generates lib/client.js from the template
+```
+
+`lib/client.js` is generated, not hand-edited. Change `lib/client.template.js`
+and run `npm run build`.
+
+## Development
+
+```sh
+npm install     # installs KaTeX (build), React (tests)
+npm run build   # regenerate lib/client.js
+npm test        # build, then the verifier, the bundle lint, and the mount harness
+```
+
+npm, pnpm, and yarn all work; the repository ships a `pnpm-lock.yaml`, and pnpm
+is what the DSH CLI itself uses to install plugins.
+
+`npm test` runs three suites, all offline:
+
+- **`tests/verify.mjs`** — materializes the bundle the way the shell's module
+  loader does, then checks the manifest contract, the registrations, the
+  highlighter, the math renderer, the Markdown subset, the zoom arithmetic, the
+  stylesheet, and a full render of the fixture notebook. Around 170 assertions.
+- **`tests/lint-bundle.mjs`** — sweeps both the template and the built bundle for
+  identifiers that are referenced but never declared. A free variable makes the
+  factory throw while the shell materializes it, and the whole client roster then
+  fails to load — a blank window that `node --check` cannot detect.
+- **`tests/mount.mjs`** — mounts the plugin against a DOM stub so effects and
+  event wiring actually run, and asserts the notebook tree survives opening the
+  lightbox.
+
+### Interaction testing in a real browser
+
+React's synthetic event system does not work against a hand-written DOM stub, so
+the controls' click handlers are verified in a real browser instead:
+
+```sh
+npm run test-page                       # writes test-page.html
+node tests/make-page.mjs out.html       # or choose the output path
+```
+
+Open the page, click **Open the lightbox**, and press every control; each
+interaction, the zoom readout, and any error is written to the log at the top of
+the page. Append `?auto=1` to the URL and the page drives itself, which is how a
+headless run reads the result back:
+
+```sh
+msedge --headless=new --virtual-time-budget=15000 --dump-dom \
+  "file:///path/to/test-page.html?auto=1"
+```
+
+That page also hit-tests every control with `document.elementFromPoint`, which is
+how a stacking-order bug was found: a fixed application header with a higher
+`z-index` than the lightbox covered the middle of the toolbar, so only its edges
+responded to a click.
+
+## Requirements
+
+- Node 18 or newer to build and test.
+- React is **not** a dependency: the shell supplies it from its own frozen module
+  table. It is a dev dependency only, for the tests.
+
+## Notes for plugin authors
+
+Two things this plugin learned the hard way, both now covered by assertions:
+
+- A client bundle is materialized inside the shell's module loader. If the
+  factory throws, the row has no exports and the whole roster fails — which looks
+  like a blank window rather than a plugin error. Keep the factory free of
+  undeclared identifiers.
+- A full-screen overlay needs a `z-index` above every host layer. `9999` is not
+  enough: application chrome is often a fixed header with its own stacking
+  context, and it will silently swallow clicks aimed at your controls.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
