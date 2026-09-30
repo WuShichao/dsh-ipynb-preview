@@ -37,3 +37,10 @@ jobs:
 
       - name: Verify
         run: npm test
+
+      # On a release tag, verify what a user actually downloads rather than the
+      # working tree: fetch the registry tarball, materialize its bundle, and
+      # render the fixture through it.
+      - name: Check the published tarball
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: npm run check-published

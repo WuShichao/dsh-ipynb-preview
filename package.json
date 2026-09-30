@@ -38,7 +38,8 @@
     "test-page": "node tests/make-page.mjs test-page.html",
     "prepare": "node tools/build-client.mjs",
     "verify": "node tests/verify.mjs",
-    "test": "npm run build && npm run verify && npm run lint && npm run mount"
+    "test": "npm run build && npm run verify && npm run lint && npm run mount",
+    "check-published": "node tests/check-published.mjs"
   },
   "devDependencies": {
     "katex": "0.18.9",
