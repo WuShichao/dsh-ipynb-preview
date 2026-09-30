@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/WuShichao/dsh-ipynb-preview/actions/workflows/ci.yml/badge.svg)](https://github.com/WuShichao/dsh-ipynb-preview/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/dsh-ipynb-preview)](https://www.npmjs.com/package/dsh-ipynb-preview)
+[![downloads](https://img.shields.io/npm/dm/dsh-ipynb-preview)](https://www.npmjs.com/package/dsh-ipynb-preview)
 [![license](https://img.shields.io/npm/l/dsh-ipynb-preview)](LICENSE)
 [![dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-4D6BFE)](https://github.com/topics/dsh-plugin)
 
@@ -142,3 +143,5 @@ Two things this plugin learned the hard way, both now covered by assertions:
 
 MIT — see [LICENSE](LICENSE). KaTeX is bundled under its own MIT license; see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Published to npm by [@nightwingng](https://www.npmjs.com/~nightwingng).
