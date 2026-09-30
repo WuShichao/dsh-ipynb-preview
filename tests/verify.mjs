@@ -212,7 +212,7 @@ check("no live markup survives", !/<(?!\/?span)/.test(dangerous));
 const fidelity = [
   "x = 1_000\ny = 0xFF\nz = 1.5e-3\nw = 3j",
   "s = 'it\\'s'\nt = \"a\\\"b\"\nu = f'{v!r:>{w}}'",
-  "s = '闁?闂?3.14159'  # 闁活亜銆婇柤闂寸ode",
+  "s = 'café — 中文'  # non-ASCII must round-trip\nx = 3.14159",
   "x = 1  # it's fine\ny = 2",
   "INI = f\"\"\"\n[var]\nname = value  ; note\n\"\"\"",
 ];

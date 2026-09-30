@@ -1,0 +1,17 @@
+# Normalize line endings in the repository, and never rewrite them on checkout.
+#
+# The client artifact is generated from lib/client.template.js, so a checkout
+# that converted the template's endings would make `npm run build` produce a
+# different bundle than the one committed -- and CI would fail for a reason that
+# has nothing to do with the change.
+* text=auto eol=lf
+
+# The generated bundle is byte-compared against a fresh build, so it must never
+# be touched by any conversion.
+lib/client.js binary
+lib/client.template.js text eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary
