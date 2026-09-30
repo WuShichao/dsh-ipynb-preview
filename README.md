@@ -62,15 +62,17 @@ and run `npm run build`.
 ## Development
 
 ```sh
-npm install     # installs KaTeX (build), React (tests)
-npm run build   # regenerate lib/client.js
-npm test        # build, then the verifier, the bundle lint, and the mount harness
+pnpm install    # installs KaTeX (build), React (tests)
+pnpm run build  # regenerate lib/client.js
+pnpm test       # build, then the verifier, the bundle lint, and the mount harness
 ```
 
-npm, pnpm, and yarn all work; the repository ships a `pnpm-lock.yaml`, and pnpm
-is what the DSH CLI itself uses to install plugins.
+The repository ships a `pnpm-lock.yaml`, and pnpm is what the DSH CLI itself uses
+to install plugins, so CI installs with `pnpm install --frozen-lockfile`. npm and
+yarn also work: every script is a plain `node` invocation rather than a chained
+`npm run`, so no script depends on which package manager started it.
 
-`npm test` runs three suites, all offline:
+`pnpm test` runs three suites, all offline:
 
 - **`tests/verify.mjs`** — materializes the bundle the way the shell's module
   loader does, then checks the manifest contract, the registrations, the
