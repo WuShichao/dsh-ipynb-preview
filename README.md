@@ -1,5 +1,10 @@
 # dsh-ipynb-preview
 
+[![CI](https://github.com/WuShichao/dsh-ipynb-preview/actions/workflows/ci.yml/badge.svg)](https://github.com/WuShichao/dsh-ipynb-preview/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/dsh-ipynb-preview)](https://www.npmjs.com/package/dsh-ipynb-preview)
+[![license](https://img.shields.io/npm/l/dsh-ipynb-preview)](LICENSE)
+[![dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-4D6BFE)](https://github.com/topics/dsh-plugin)
+
 A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) plugin that
 renders Jupyter notebooks in the document preview pane: syntax-highlighted code,
 real LaTeX, and zoomable figures — instead of raw JSON.
