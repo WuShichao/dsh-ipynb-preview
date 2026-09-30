@@ -47,9 +47,27 @@ jobs:
       - name: Verify
         run: pnpm test
 
-      # Only on a release tag: verify what a user actually downloads rather than
-      # the working tree, by fetching the registry tarball for this version and
-      # rendering the fixture through the bundle inside it.
-      - name: Check the published tarball
+      # On a release tag, verify what a user actually downloads rather than the
+      # working tree.
+      #
+      # A release does not imply the npm channel carries it: 0.2.0 was released as
+      # a tarball because npm requires a stronger 2FA factor to approve a staged
+      # publish than the account has, so the registry may legitimately lag the
+      # tag. Ask the registry first and say so plainly, instead of failing a
+      # release that was distributed by another channel.
+      - name: Is this version on npm?
         if: startsWith(github.ref, 'refs/tags/v')
+        id: npm_has_version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if curl -sfI "https://registry.npmjs.org/dsh-ipynb-preview/-/dsh-ipynb-preview-$version.tgz" > /dev/null; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "npm has $version"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::npm has no tarball for $version yet; skipping the registry check. This release is distributed by tarball."
+          fi
+
+      - name: Check the published tarball
+        if: startsWith(github.ref, 'refs/tags/v') && steps.npm_has_version.outputs.present == 'true'
         run: pnpm run check-published
