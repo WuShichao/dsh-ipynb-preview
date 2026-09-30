@@ -1,6 +1,6 @@
 {
   "name": "dsh-ipynb-preview",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Render Jupyter .ipynb notebooks in the DSH document preview, with syntax highlighting, LaTeX math, and zoomable figures, instead of showing raw JSON",
   "keywords": [
     "dsh",

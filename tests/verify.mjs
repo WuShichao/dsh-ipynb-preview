@@ -10,6 +10,7 @@
  */
 import { readFileSync } from "node:fs";
 import { MATH_EXPRESSIONS } from "./make-fixture.mjs";
+import { MARKDOWN_CASES } from "./make-table-fixture.mjs";
 import {
   BUNDLE, FIXTURE, PATCH, PACKAGE, createChecker, loadBundle, loadReact, readPackage,
 } from "./harness.mjs";
@@ -80,7 +81,8 @@ const mdHtml = md("# H1\n\n- a\n- b\n\n1. one\n\n> quote\n\n`code` and **bold** 
 check("headings", mdHtml.includes("<h1>H1</h1>"));
 check("unordered list", /<ul><li>a<\/li><li>b<\/li><\/ul>/.test(mdHtml));
 check("ordered list", /<ol><li>one<\/li><\/ol>/.test(mdHtml));
-check("blockquote", mdHtml.includes("<blockquote>quote</blockquote>"));
+// A quoted line is a full block, so prose inside it is wrapped in a paragraph.
+check("blockquote", mdHtml.includes("<blockquote><p>quote</p></blockquote>"));
 check("inline code", mdHtml.includes("<code>code</code>"));
 check("strong", mdHtml.includes("<strong>bold</strong>"));
 check("emphasis", mdHtml.includes("<em>em</em>"));
@@ -95,6 +97,116 @@ check("strong declares a heavier weight",
 check("underscore identifiers are not italicised",
   md("use log_10 and f_22 here").includes("log_10") &&
     !md("use log_10 here").includes("<em>"));
+
+/* ---- tables ---------------------------------------------------------- */
+
+// Tables were missing entirely until a real research notebook needed them: the
+// whole table collapsed into one paragraph of pipe characters, which is what a
+// reader reported as "the tables are mangled". The cases below are the fixture
+// the suite renders, so the expectations and the input cannot drift apart.
+console.log("\n=== markdown tables ===");
+const cellCount = (html, tag) => (html.match(new RegExp(`<${tag}[\\s>]`, "g")) || []).length;
+const rowCount = (html) => (html.match(/<tr[\s>]/g) || []).length;
+
+const basic = md(MARKDOWN_CASES["table-basic"]);
+check("a table becomes a real table", basic.includes('<table class="dshnb-table">'));
+check("the header row is in a thead with th cells",
+  basic.includes("<thead>") && cellCount(basic, "th") === 3);
+check("the body rows are in a tbody with td cells",
+  basic.includes("<tbody>") && cellCount(basic, "td") === 6);
+check("row count is header plus body", rowCount(basic) === 3, `${rowCount(basic)} rows`);
+
+// `|---|---|` and `| --- | --- |` are both valid GFM; a strict reading that needs
+// the spaces would reject most hand-written tables.
+check("a separator row without spaces is accepted",
+  md(MARKDOWN_CASES["table-spaced-separator"]).includes("<table"));
+check("a separator row with spaces is accepted",
+  md("| a | b |\n| - | - |\n| 1 | 2 |").includes("<table"));
+
+const aligned = md(MARKDOWN_CASES["table-alignment"]);
+check("leading colon aligns left", /textAlign:"left"|text-align:\s*left/.test(aligned));
+check("both colons align centre", /textAlign:"center"|text-align:\s*center/.test(aligned));
+check("trailing colon aligns right", /textAlign:"right"|text-align:\s*right/.test(aligned));
+
+const mathCell = md(MARKDOWN_CASES["table-inline-math"]);
+check("inline math renders inside a table cell",
+  mathCell.includes('class="katex"') && mathCell.includes("<table"));
+check("bold renders inside a table cell", mathCell.includes("<strong>12.52</strong>"));
+
+// A \| inside a cell is data. Splitting on it would add a phantom column, and
+// dropping the backslash would rewrite what a code span shows the reader.
+// This fixture has two body rows of two columns, hence four td cells.
+const escaped = md(MARKDOWN_CASES["table-escaped-pipe"]);
+check("an escaped pipe stays in one cell",
+  cellCount(escaped, "th") === 2 && cellCount(escaped, "td") === 4,
+  `th=${cellCount(escaped, "th")} td=${cellCount(escaped, "td")}`);
+check("the escaped pipe keeps its backslash, as a code span shows",
+  escaped.includes("a \\| b"), (escaped.match(/a[^<]*b/) || [])[0] || "not found");
+
+// The other half of the same rule: inside a code span a bare pipe is literal,
+// so a table written around one still has the right number of columns.
+const pipeInCode = md("| a | b |\n|---|---|\n| `x | y` | z |");
+check("a bare pipe inside a code span does not split the cell",
+  cellCount(pipeInCode, "td") === 2,
+  `td=${cellCount(pipeInCode, "td")}`);
+
+const mixed = md(MARKDOWN_CASES["table-mixed-inline"]);
+check("emphasis, code and links render inside cells",
+  mixed.includes("<em>italic</em>") && mixed.includes("<code>code</code>") &&
+    mixed.includes('href="https://example.com"'));
+
+// The guard against over-reach: a pipe in prose is not a table.
+const prose = md(MARKDOWN_CASES["no-table-pipe-text"]);
+check("a paragraph containing a pipe is not turned into a table",
+  !prose.includes("<table"), prose.slice(0, 90));
+
+const afterTable = md(MARKDOWN_CASES["table-then-paragraph"]);
+check("a paragraph after a table is still rendered",
+  afterTable.includes("<table") && afterTable.includes("A paragraph after the table."));
+check("the table does not swallow the paragraph that follows it",
+  cellCount(afterTable, "td") === 2, `td=${cellCount(afterTable, "td")}`);
+
+// A row shorter than the header is padded, or the row loses its grid shape.
+const ragged = md("| a | b | c |\n|---|---|---|\n| 1 |\n| 1 | 2 | 3 |");
+check("a short row is padded to the header width",
+  cellCount(ragged, "td") === 6, `td=${cellCount(ragged, "td")}`);
+
+/* ---- blockquotes and task lists -------------------------------------- */
+
+// A list inside a quote has to survive as a list. The old code joined every
+// quoted line into one paragraph, so the markers printed as text.
+console.log("\n=== blockquotes and task lists ===");
+const quoteList = md(MARKDOWN_CASES["blockquote-list"]);
+check("a list inside a blockquote stays a list",
+  quoteList.includes("<blockquote>") && quoteList.includes("<ul>") &&
+    cellCount(quoteList, "li") === 2, quoteList.slice(0, 120));
+check("blockquote list items are not flattened into one line",
+  !quoteList.includes("- first - second"));
+
+const tasks = md(MARKDOWN_CASES["task-list"]);
+check("task items render as checkboxes",
+  (tasks.match(/type="checkbox"/g) || []).length === 2);
+check("a checked task carries checked",
+  tasks.includes('checked=""') || tasks.includes("checked>"));
+check("the task marker is not also printed as text",
+  !tasks.includes("[ ]") && !tasks.includes("[x]"), tasks.slice(0, 140));
+check("the checkbox is disabled, since the preview is read-only",
+  tasks.includes("disabled"));
+check("a task item is marked so the list marker is suppressed",
+  tasks.includes('class="dshnb-task"'));
+
+// Rendering a task list must not emit a React key warning: the two children of
+// each item need their own keys, or React complains on every render.
+{
+  const warnings = [];
+  const realError = console.error;
+  console.error = (...a) => warnings.push(a.map(String).join(" "));
+  md(MARKDOWN_CASES["task-list"]);
+  md(MARKDOWN_CASES["table-inline-math"]);
+  console.error = realError;
+  check("no React key warning from generated lists",
+    !warnings.some((w) => /unique "key"/.test(w)), warnings.slice(0, 1).join(" "));
+}
 
 /* ---- fenced code ----------------------------------------------------- */
 

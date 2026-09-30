@@ -17,7 +17,7 @@ opens as a notebook.
 |---|---|
 | Syntax highlighting | Python, JavaScript/TypeScript, JSON, Bash, and INI, with per-language grammars |
 | LaTeX math | Vendored KaTeX, so it works offline; inline `$…$` and display `$$…$$`, including inside tables and lists |
-| Markdown subset | Headings, lists, tables, blockquotes, fenced code, links, bold and italic, code spans |
+| Markdown subset | Headings, lists, tables with column alignment, blockquotes, task lists, fenced code, links, bold and italic, code spans |
 | Figure zoom | Click any output figure to open it, then scroll or `+` / `−` to zoom continuously, drag to pan, `0` to fit |
 | Save figures | Names each figure after the notebook, e.g. `sample-notebook-cell3-out1.png` |
 | Outputs | Streams, `display_data`, `execute_result`, and error tracebacks with ANSI escapes stripped |
