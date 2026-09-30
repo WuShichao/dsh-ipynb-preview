@@ -2,7 +2,7 @@
 
 A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) plugin that
 renders Jupyter notebooks in the document preview pane: syntax-highlighted code,
-real LaTeX, and zoomable figures — instead of raw JSON.
+real LaTeX, and zoomable figures 鈥?instead of raw JSON.
 
 Without it, opening a `.ipynb` in DSH shows its JSON source. With it, the file
 opens as a notebook.
@@ -10,9 +10,9 @@ opens as a notebook.
 | Feature | Notes |
 |---|---|
 | Syntax highlighting | Python, JavaScript/TypeScript, JSON, Bash, and INI, with per-language grammars |
-| LaTeX math | Vendored KaTeX, so it works offline; inline `$…$` and display `$$…$$`, including inside tables and lists |
+| LaTeX math | Vendored KaTeX, so it works offline; inline `$鈥?` and display `$$鈥?$`, including inside tables and lists |
 | Markdown subset | Headings, lists, tables, blockquotes, fenced code, links, bold/italic, code spans |
-| Figure zoom | Click any output figure to open it, then scroll or `+`/`−` to zoom continuously, drag to pan, `0` to fit |
+| Figure zoom | Click any output figure to open it, then scroll or `+`/`鈭抈 to zoom continuously, drag to pan, `0` to fit |
 | Save figures | Names each figure after the notebook, e.g. `sample-notebook-cell3-out1.png` |
 | Outputs | Streams, `display_data`, `execute_result`, and error tracebacks with ANSI escapes stripped |
 
@@ -66,15 +66,15 @@ is what the DSH CLI itself uses to install plugins.
 
 `npm test` runs three suites, all offline:
 
-- **`tests/verify.mjs`** — materializes the bundle the way the shell's module
+- **`tests/verify.mjs`** 鈥?materializes the bundle the way the shell's module
   loader does, then checks the manifest contract, the registrations, the
   highlighter, the math renderer, the Markdown subset, the zoom arithmetic, the
   stylesheet, and a full render of the fixture notebook. Around 170 assertions.
-- **`tests/lint-bundle.mjs`** — sweeps both the template and the built bundle for
+- **`tests/lint-bundle.mjs`** 鈥?sweeps both the template and the built bundle for
   identifiers that are referenced but never declared. A free variable makes the
   factory throw while the shell materializes it, and the whole client roster then
-  fails to load — a blank window that `node --check` cannot detect.
-- **`tests/mount.mjs`** — mounts the plugin against a DOM stub so effects and
+  fails to load 鈥?a blank window that `node --check` cannot detect.
+- **`tests/mount.mjs`** 鈥?mounts the plugin against a DOM stub so effects and
   event wiring actually run, and asserts the notebook tree survives opening the
   lightbox.
 
@@ -114,7 +114,7 @@ responded to a click.
 Two things this plugin learned the hard way, both now covered by assertions:
 
 - A client bundle is materialized inside the shell's module loader. If the
-  factory throws, the row has no exports and the whole roster fails — which looks
+  factory throws, the row has no exports and the whole roster fails 鈥?which looks
   like a blank window rather than a plugin error. Keep the factory free of
   undeclared identifiers.
 - A full-screen overlay needs a `z-index` above every host layer. `9999` is not
@@ -123,4 +123,4 @@ Two things this plugin learned the hard way, both now covered by assertions:
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT 鈥?see [LICENSE](LICENSE).
