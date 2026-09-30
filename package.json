@@ -39,7 +39,9 @@
     "prepare": "node tools/build-client.mjs",
     "verify": "node tests/verify.mjs",
     "test": "node tools/build-client.mjs && node tests/verify.mjs && node tests/lint-bundle.mjs && node tests/mount.mjs",
-    "check-published": "node tests/check-published.mjs"
+    "check-published": "node tests/check-published.mjs",
+    "pack": "pnpm pack --pack-destination release",
+    "verify-tgz": "node tests/verify-tgz.mjs"
   },
   "devDependencies": {
     "katex": "0.18.9",
